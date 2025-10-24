@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# build output
+dist/
+build/
+
+# local environment files
+.env
+.env.development.local
+.env.production.local
+.env.test.local
+
+# misc
+.DS_Store
+*.log
+.vscode/
+.idea/
+.cache/
+coverage/
+
+# optional - Vite specific
+*.local
+
+# other system files
+Thumbs.db
