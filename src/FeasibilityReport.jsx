@@ -1124,28 +1124,62 @@ const ReportCreditCard = ({ credit, achievedPoints, isMandatory }) => {
 };
 
 const CategoryReportColumn = ({ category, attemptedCredits }) => {
-  // Get mandatory and optional credits from the category
-  const mandatoryCredits = category.requiredChanges.sort((a, b) =>
-    a.alias.localeCompare(b.alias)
-  );
-  const optionalCredits = category.nudges.sort((a, b) =>
-    a.alias.localeCompare(b.alias)
+  // Group all credits by their credit ID
+  const allCredits = [...category.requiredChanges, ...category.nudges];
+  const creditGroups = allCredits.reduce((groups, credit) => {
+    const creditId = credit.credits[0];
+    if (!groups[creditId]) {
+      groups[creditId] = {
+        creditId,
+        items: [],
+        totalPoints:
+          creditId === "SD CR 3" ? 2 : creditId === "SD CR 5" ? 4 : 0, // Will be updated for other credits
+        achievedPoints: 0,
+        isMandatory: false,
+      };
+    }
+    groups[creditId].items.push(credit);
+    // Only update totalPoints for credits other than SD CR 3 and SD CR 5
+    if (creditId !== "SD CR 3" && creditId !== "SD CR 5") {
+      groups[creditId].totalPoints += credit.pointsAvailable;
+    }
+    groups[creditId].achievedPoints +=
+      attemptedCredits[credit.alias]?.points || 0;
+    // Cap achieved points to max allowed
+    if (creditId === "SD CR 3") {
+      groups[creditId].achievedPoints = Math.min(
+        groups[creditId].achievedPoints,
+        2
+      );
+    } else if (creditId === "SD CR 5") {
+      groups[creditId].achievedPoints = Math.min(
+        groups[creditId].achievedPoints,
+        5
+      );
+    }
+    groups[creditId].isMandatory =
+      groups[creditId].isMandatory || category.requiredChanges.includes(credit);
+    return groups;
+  }, {});
+
+  // Convert to array and sort by credit ID
+  const sortedCreditGroups = Object.values(creditGroups).sort((a, b) =>
+    a.creditId.localeCompare(b.creditId)
   );
 
-  // Calculate total points for this category
-  const allCredits = [...mandatoryCredits, ...optionalCredits];
-  const pointsAvailable = allCredits.reduce(
-    (sum, c) => sum + c.pointsAvailable,
+  // Calculate total points for category
+  const pointsAvailable = sortedCreditGroups.reduce(
+    (sum, group) => sum + group.totalPoints,
     0
   );
-  const pointsAchieved = allCredits.reduce(
-    (sum, c) => sum + (attemptedCredits[c.alias]?.points || 0),
+  const pointsAchieved = sortedCreditGroups.reduce(
+    (sum, group) => sum + group.achievedPoints,
     0
   );
 
   return (
     <div className="bg-white rounded-lg shadow-lg border-2 flex flex-col min-w-[200px] max-w-full sm:max-w-[250px] flex-1 overflow-hidden border-gray-200">
-      {/* Category Header - Styled as per snippet */}
+      {/* Category Header */}
       <div className="p-3" style={{ backgroundColor: category.color }}>
         <div className="flex justify-between items-center">
           <h3 className="text-2xl font-extrabold text-black">
@@ -1165,36 +1199,34 @@ const CategoryReportColumn = ({ category, attemptedCredits }) => {
         </p>
       </div>
 
-      {/* Credits Body - Styled as per snippet */}
+      {/* Credits Body */}
       <div className="p-2 space-y-1 overflow-y-auto flex-grow">
-        {mandatoryCredits.length > 0 && (
-          <>
-            <div className="space-y-1">
-              {mandatoryCredits.map((credit) => (
-                <ReportCreditCard
-                  key={credit.alias}
-                  credit={credit}
-                  isMandatory={true}
-                  achievedPoints={attemptedCredits[credit.alias]?.points || 0}
-                />
-              ))}
-            </div>
-          </>
-        )}
+        <div className="space-y-2">
+          {sortedCreditGroups.map((group) => {
+            // Get the description from the first item (they should all be related)
+            const description = group.items[0].displayText;
 
-        {mandatoryCredits.length > 0 && (
-          <div className="my-2 border-t border-gray-200"></div>
-        )}
-
-        <div className="space-y-1">
-          {optionalCredits.map((credit) => (
-            <ReportCreditCard
-              key={credit.alias}
-              credit={credit}
-              isMandatory={false}
-              achievedPoints={attemptedCredits[credit.alias]?.points || 0}
-            />
-          ))}
+            return (
+              <div
+                key={group.creditId}
+                className={`rounded-md p-2 text-sm border ${
+                  group.achievedPoints > 0
+                    ? "bg-white border-green-300 text-gray-800"
+                    : "bg-gray-50 border-gray-200 text-gray-500"
+                }`}
+              >
+                <div className="flex justify-between items-center">
+                  <span className="font-bold">{group.creditId}</span>
+                  <div className="flex items-center gap-1">
+                    <span className="font-bold tabular-nums">
+                      {group.achievedPoints} / {group.totalPoints}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-xs truncate mt-1">{description}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
