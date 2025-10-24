@@ -895,9 +895,19 @@ const ProjectDetails = ({ onNext, projectData, setProjectData }) => {
         </div>
       </div>
       <div className="mt-10 text-center">
+        {(!projectData.name || !projectData.area) && (
+          <p className="text-red-500 mb-4">
+            Please provide both project name and built-up area to continue
+          </p>
+        )}
         <button
           onClick={onNext}
-          className="bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition duration-300"
+          disabled={!projectData.name || !projectData.area}
+          className={`font-bold py-3 px-8 rounded-lg transition duration-300 ${
+            !projectData.name || !projectData.area
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-green-600 text-white hover:bg-green-700"
+          }`}
         >
           Start Feasibility Check
         </button>
