@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import Tooltip from "./Tooltip";
 
 const feasibilityData = [
   {
@@ -114,7 +115,7 @@ const feasibilityData = [
 
         image:
           "https://sdplus-public-assets.s3.ap-south-1.amazonaws.com/FeasibilityReportImages/SD/IGBC_GH-nud-SD-CR-3-1.png",
-        pointsAvailable: 2,
+        pointsAvailable: 1,
         targetPoints: { certified: 0, silver: 0, gold: 1, platinum: 1 },
       },
       {
@@ -125,7 +126,7 @@ const feasibilityData = [
         credits: ["SD CR 3"],
         image:
           "https://sdplus-public-assets.s3.ap-south-1.amazonaws.com/FeasibilityReportImages/SD/IGBC_GH-nud-SD-CR-3-2.png",
-        pointsAvailable: 2,
+        pointsAvailable: 1,
         targetPoints: { certified: 0, silver: 0, gold: 0, platinum: 0 },
       },
       {
@@ -138,7 +139,7 @@ const feasibilityData = [
 
         image:
           "https://sdplus-public-assets.s3.ap-south-1.amazonaws.com/FeasibilityReportImages/SD/IGBC_GH-nud-SD-CR-3-3.png",
-        pointsAvailable: 2,
+        pointsAvailable: 1,
         targetPoints: { certified: 0, silver: 0, gold: 0, platinum: 1 },
       },
       {
@@ -150,7 +151,7 @@ const feasibilityData = [
         credits: ["SD CR 3"],
         image:
           "https://sdplus-public-assets.s3.ap-south-1.amazonaws.com/FeasibilityReportImages/SD/IGBC_GH-nud-SD-CR-3-4.png",
-        pointsAvailable: 2,
+        pointsAvailable: 1,
         targetPoints: { certified: 0, silver: 0, gold: 0, platinum: 0 },
       },
       {
@@ -162,7 +163,7 @@ const feasibilityData = [
         credits: ["SD CR 5"],
         image:
           "https://sdplus-public-assets.s3.ap-south-1.amazonaws.com/FeasibilityReportImages/SD/IGBC_GH-nud-SD-CR-5-1.png",
-        pointsAvailable: 4,
+        pointsAvailable: 1,
         targetPoints: { certified: 1, silver: 1, gold: 1, platinum: 1 },
       },
       {
@@ -173,7 +174,7 @@ const feasibilityData = [
 
         image:
           "https://sdplus-public-assets.s3.ap-south-1.amazonaws.com/FeasibilityReportImages/SD/IGBC_GH-nud-SD-CR-5-2.png",
-        pointsAvailable: 4,
+        pointsAvailable: 2,
         targetPoints: { certified: 1, silver: 1, gold: 2, platinum: 2 },
       },
       {
@@ -183,7 +184,7 @@ const feasibilityData = [
         credits: ["SD CR 5"],
         image:
           "https://sdplus-public-assets.s3.ap-south-1.amazonaws.com/FeasibilityReportImages/SD/IGBC_GH-nud-SD-CR-5-3.png",
-        pointsAvailable: 4,
+        pointsAvailable: 1,
         targetPoints: { certified: 0, silver: 0, gold: 0, platinum: 1 },
       },
     ],
@@ -438,7 +439,8 @@ const feasibilityData = [
         tooltip:
           "50% to 75% of regularly occupied spaces with connectivity to exteriors",
         credits: ["RHW CR 4"],
-        image: "https://placehold.co/600x400/c4b5fd/5b21b6?text=Views",
+        image:
+          "https://sdplus-public-assets.s3.ap-south-1.amazonaws.com/FeasibilityReportImages/RHW/IGBC_GH-RHW-CR-4.png",
         pointsAvailable: 2,
         targetPoints: { certified: 2, silver: 2, gold: 2, platinum: 2 },
       },
@@ -448,7 +450,8 @@ const feasibilityData = [
         tooltip:
           "Source GreenPro or any other Eco-label certified paints, coatings, adhesives, sealants",
         credits: ["RHW CR 5"],
-        image: "https://placehold.co/600x400/c4b5fd/5b21b6?text=Low+VOC",
+        image:
+          "https://sdplus-public-assets.s3.ap-south-1.amazonaws.com/FeasibilityReportImages/RHW/IGBC_GH-RHW-CR-5.png",
         pointsAvailable: 2,
         targetPoints: { certified: 2, silver: 2, gold: 2, platinum: 2 },
       },
@@ -458,7 +461,8 @@ const feasibilityData = [
         tooltip:
           "5% of total occupants can be accommodated in the well-being facilites at any point during the day. ",
         credits: ["RHW CR 6"],
-        image: "https://placehold.co/600x400/c4b5fd/5b21b6?text=Wellbeing",
+        image:
+          "https://sdplus-public-assets.s3.ap-south-1.amazonaws.com/FeasibilityReportImages/RHW/IGBC_GH-RHW-CR-6.png",
         pointsAvailable: 2,
         targetPoints: { certified: 2, silver: 2, gold: 2, platinum: 2 },
       },
@@ -470,7 +474,8 @@ const feasibilityData = [
         tooltip:
           "75%  to 95% of regurlay occupied spaces in dwelling units to have sufficient daylight with minimum glazing factors",
         credits: ["RHW CR 1"],
-        image: "",
+        image:
+          "https://sdplus-public-assets.s3.ap-south-1.amazonaws.com/FeasibilityReportImages/RHW/IGBC_GH-RHW-CR-1.png",
         pointsAvailable: 2,
         targetPoints: { certified: 0, silver: 1, gold: 1, platinum: 2 },
       },
@@ -480,7 +485,8 @@ const feasibilityData = [
         tooltip:
           "Openable area of 5% to 12% of the carpet area in all regularly occupied spaces in dwelling units",
         credits: ["RHW CR 2"],
-        image: "",
+        image:
+          "https://sdplus-public-assets.s3.ap-south-1.amazonaws.com/FeasibilityReportImages/RHW/IGBC_GH-RHW-CR-2.png",
         pointsAvailable: 2,
         targetPoints: { certified: 0, silver: 0, gold: 2, platinum: 2 },
       },
@@ -490,7 +496,8 @@ const feasibilityData = [
         tooltip:
           "25% to 95% of the regularly occupied spaces to have cross ventilation",
         credits: ["RHW CR 3"],
-        image: "",
+        image:
+          "https://sdplus-public-assets.s3.ap-south-1.amazonaws.com/FeasibilityReportImages/RHW/IGBC_GH-RHW-CR-3.png",
         pointsAvailable: 4,
         targetPoints: { certified: 0, silver: 0, gold: 1, platinum: 1 },
       },
@@ -546,14 +553,6 @@ const certificationLevels = {
 };
 
 // --- Helper Components ---
-const Tooltip = ({ text, children }) => (
-  <span className="tooltip inline-block group relative">
-    {children}
-    <span className="tooltiptext absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-64 bg-gray-700 text-white text-xs rounded-md p-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
-      {text}
-    </span>
-  </span>
-);
 
 const CreditCard = ({
   credit,
@@ -755,22 +754,27 @@ const CategorySection = ({
   const [view, setView] = useState("recommended");
 
   const allCredits = useMemo(() => {
-    const required = category.requiredChanges.map((c) => ({
-      ...c,
-      type: "required",
-    }));
-    const nudges = category.nudges.map((c) => ({
-      ...c,
-      type: c.targetPoints[desiredLevel] > 0 ? "recommended" : "other",
-    }));
+    // Helper function to extract numeric part from alias
+    const getAliasNumber = (alias) => {
+      const match = alias.match(/CR-(\d+)/);
+      return match ? parseInt(match[1]) : 0;
+    };
 
-    const sortedNudges = nudges.sort((a, b) => {
-      if (a.type === "recommended" && b.type === "other") return -1;
-      if (a.type === "other" && b.type === "recommended") return 1;
-      return 0;
+    // Combine and map all credits
+    const allMappedCredits = [
+      ...category.requiredChanges.map((c) => ({ ...c, type: "required" })),
+      ...category.nudges.map((c) => ({
+        ...c,
+        type: c.targetPoints[desiredLevel] > 0 ? "recommended" : "other",
+      })),
+    ];
+
+    // Sort by credit number
+    return allMappedCredits.sort((a, b) => {
+      const numA = getAliasNumber(a.alias);
+      const numB = getAliasNumber(b.alias);
+      return numA - numB;
     });
-
-    return [...required, ...sortedNudges];
   }, [category, desiredLevel]);
 
   const visibleCredits = useMemo(() => {
@@ -1132,40 +1136,51 @@ const CategoryReportColumn = ({ category, attemptedCredits }) => {
       groups[creditId] = {
         creditId,
         items: [],
-        totalPoints:
-          creditId === "SD CR 3" ? 2 : creditId === "SD CR 5" ? 4 : 0, // Will be updated for other credits
+        totalPoints: 0, // Will be calculated as sum of all items
         achievedPoints: 0,
         isMandatory: false,
       };
     }
-    groups[creditId].items.push(credit);
-    // Only update totalPoints for credits other than SD CR 3 and SD CR 5
-    if (creditId !== "SD CR 3" && creditId !== "SD CR 5") {
-      groups[creditId].totalPoints += credit.pointsAvailable;
-    }
+
+    // Sort items by alias when adding new item
+    const newItems = [...groups[creditId].items, credit].sort((a, b) =>
+      a.alias.localeCompare(b.alias)
+    );
+    groups[creditId].items = newItems;
+
+    // Add to total points available for this credit
+    groups[creditId].totalPoints += credit.pointsAvailable;
+
+    // Add achieved points
     groups[creditId].achievedPoints +=
       attemptedCredits[credit.alias]?.points || 0;
-    // Cap achieved points to max allowed
+
+    // Special cases for max points
     if (creditId === "SD CR 3") {
-      groups[creditId].achievedPoints = Math.min(
-        groups[creditId].achievedPoints,
-        2
-      );
+      groups[creditId].totalPoints = Math.min(groups[creditId].totalPoints, 2);
     } else if (creditId === "SD CR 5") {
-      groups[creditId].achievedPoints = Math.min(
-        groups[creditId].achievedPoints,
-        5
-      );
+      groups[creditId].totalPoints = Math.min(groups[creditId].totalPoints, 5);
     }
+
+    // Cap achieved points at total points
+    groups[creditId].achievedPoints = Math.min(
+      groups[creditId].achievedPoints,
+      groups[creditId].totalPoints
+    );
+
     groups[creditId].isMandatory =
       groups[creditId].isMandatory || category.requiredChanges.includes(credit);
     return groups;
   }, {});
 
-  // Convert to array and sort by credit ID
-  const sortedCreditGroups = Object.values(creditGroups).sort((a, b) =>
-    a.creditId.localeCompare(b.creditId)
-  );
+  // Convert to array and sort by credit number
+  const sortedCreditGroups = Object.values(creditGroups).sort((a, b) => {
+    const getNumber = (creditId) => {
+      const match = creditId.match(/CR (\d+)/);
+      return match ? parseInt(match[1]) : 0;
+    };
+    return getNumber(a.creditId) - getNumber(b.creditId);
+  });
 
   // Calculate total points for category
   const pointsAvailable = sortedCreditGroups.reduce(
