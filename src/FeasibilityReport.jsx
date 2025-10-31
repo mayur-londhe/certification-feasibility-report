@@ -350,7 +350,8 @@ const feasibilityData = [
         tooltip:
           "Have a policy and procurement guidelines in place to purchase eco-labelled building products & materials.",
         credits: ["MR CR 1"],
-        image: "https://placehold.co/600x400/fca5a5/991b1b?text=Policy",
+        image:
+          "https://sdplus-public-assets.s3.ap-south-1.amazonaws.com/FeasibilityReportImages/MR/IGBC_GH-MR-CR-1.png",
         pointsAvailable: 1,
         targetPoints: { certified: 1, silver: 1, gold: 1, platinum: 1 },
       },
@@ -360,7 +361,8 @@ const feasibilityData = [
         tooltip:
           "Demonstrate a saving of at least 2.5% by weight of steel and cement",
         credits: ["MR CR 2"],
-        image: "https://placehold.co/600x400/fca5a5/991b1b?text=Design",
+        image:
+          "https://sdplus-public-assets.s3.ap-south-1.amazonaws.com/FeasibilityReportImages/MR/IGBC_GH-MR-CR-2.png",
         pointsAvailable: 1,
         targetPoints: { certified: 1, silver: 1, gold: 1, platinum: 1 },
       },
@@ -370,7 +372,8 @@ const feasibilityData = [
         tooltip:
           "Install on-site waste treatment system for treating 95% organic waste generated.",
         credits: ["MR CR 8"],
-        image: "https://placehold.co/600x400/fca5a5/991b1b?text=Waste",
+        image:
+          "https://sdplus-public-assets.s3.ap-south-1.amazonaws.com/FeasibilityReportImages/MR/IGBC_GH-MR-CR-8.png",
         pointsAvailable: 3,
         targetPoints: { certified: 3, silver: 3, gold: 3, platinum: 3 },
       },
@@ -382,7 +385,8 @@ const feasibilityData = [
         tooltip:
           "15% to 25% of total material cost to be of Certified green products",
         credits: ["MR CR 3"],
-        image: "",
+        image:
+          "https://sdplus-public-assets.s3.ap-south-1.amazonaws.com/FeasibilityReportImages/MR/IGBC_GH-MR-CR-3.png",
         pointsAvailable: 5,
         targetPoints: { certified: 3, silver: 5, gold: 5, platinum: 5 },
       },
@@ -391,7 +395,8 @@ const feasibilityData = [
         displayText: "Local Materials",
         tooltip: "50% to 75% of total materials costs to be of Local Materials",
         credits: ["MR CR 4"],
-        image: "",
+        image:
+          "https://sdplus-public-assets.s3.ap-south-1.amazonaws.com/FeasibilityReportImages/MR/IGBC_GH-MR-CR-4.png",
         pointsAvailable: 2,
         targetPoints: { certified: 2, silver: 2, gold: 2, platinum: 2 },
       },
@@ -401,7 +406,8 @@ const feasibilityData = [
         tooltip:
           "50% to 75% of total wood-based products cost to be of Eco Friendly / alternate wood ",
         credits: ["MR CR 5"],
-        image: "",
+        image:
+          "https://sdplus-public-assets.s3.ap-south-1.amazonaws.com/FeasibilityReportImages/MR/IGBC_GH-MR-CR-5.png",
         pointsAvailable: 2,
         targetPoints: { certified: 1, silver: 1, gold: 2, platinum: 2 },
       },
@@ -411,7 +417,8 @@ const feasibilityData = [
         tooltip:
           "5% to 10% of total material cost to be of alternative materials",
         credits: ["MR CR 6"],
-        image: "",
+        image:
+          "https://sdplus-public-assets.s3.ap-south-1.amazonaws.com/FeasibilityReportImages/MR/IGBC_GH-MR-CR-6.png",
         pointsAvailable: 2,
         targetPoints: { certified: 1, silver: 1, gold: 1, platinum: 1 },
       },
@@ -421,7 +428,8 @@ const feasibilityData = [
         tooltip:
           "50% to 95% of construction waste has to be avoided from being sent to landfills",
         credits: ["MR CR 7"],
-        image: "",
+        image:
+          "https://sdplus-public-assets.s3.ap-south-1.amazonaws.com/FeasibilityReportImages/MR/IGBC_GH-MR-CR-7.png",
         pointsAvailable: 2,
         targetPoints: { certified: 1, silver: 1, gold: 1, platinum: 2 },
       },
