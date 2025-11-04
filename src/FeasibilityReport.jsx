@@ -1204,7 +1204,7 @@ const CategoryReportColumn = ({ category, attemptedCredits }) => {
   );
 
   return (
-    <div className="bg-white rounded-lg shadow-lg border-2 flex flex-col min-w-[200px] max-w-full sm:max-w-[250px] flex-1 overflow-hidden border-gray-200">
+    <div className="bg-white rounded-lg shadow-lg border-2 flex flex-col min-w-[200px] max-w-full sm:max-w-[250px] flex-1 border-gray-200">
       {/* Category Header */}
       <div className="p-3" style={{ backgroundColor: category.color }}>
         <div className="flex justify-between items-center">
@@ -1220,7 +1220,7 @@ const CategoryReportColumn = ({ category, attemptedCredits }) => {
             </span>
           </div>
         </div>
-        <p className={`text-sm text-center font-semibold truncate mt-1`}>
+        <p className={`text-sm text-center font-semibold break-words mt-1`}>
           {category.name}
         </p>
       </div>
@@ -1249,7 +1249,7 @@ const CategoryReportColumn = ({ category, attemptedCredits }) => {
                     </span>
                   </div>
                 </div>
-                <p className="text-xs truncate mt-1">{description}</p>
+                <p className="text-xs mt-1 break-words">{description}</p>
               </div>
             );
           })}
