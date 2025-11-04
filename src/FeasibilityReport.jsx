@@ -523,7 +523,8 @@ const feasibilityData = [
         tooltip:
           "Atleast one principal participant of the project team shall be an IGBC Accredited Professional",
         credits: ["ID CR 3"],
-        image: "https://placehold.co/600x400/a5f3fc/155e75?text=Professional",
+        image:
+          "https://sdplus-public-assets.s3.ap-south-1.amazonaws.com/FeasibilityReportImages/ID/IGBC_GH-ID-CR-3.png",
         pointsAvailable: 1,
         targetPoints: { certified: 1, silver: 1, gold: 1, platinum: 1 },
       },
@@ -535,7 +536,8 @@ const feasibilityData = [
         tooltip:
           "Innovation strategies those are not addressed by any existing credits in the rating system",
         credits: ["ID CR 1"],
-        image: "",
+        image:
+          "https://sdplus-public-assets.s3.ap-south-1.amazonaws.com/FeasibilityReportImages/ID/IGBC_GH-ID-CR-1.png",
         pointsAvailable: 2,
         targetPoints: { certified: 0, silver: 0, gold: 1, platinum: 2 },
       },
@@ -545,7 +547,8 @@ const feasibilityData = [
         tooltip:
           "identify appropriate strategies that significantly exceed the requirements of IGBC Green Homes rating system credits",
         credits: ["ID CR 2"],
-        image: "",
+        image:
+          "https://sdplus-public-assets.s3.ap-south-1.amazonaws.com/FeasibilityReportImages/ID/IGBC_GH-ID-CR-2.png",
         pointsAvailable: 2,
         targetPoints: { certified: 0, silver: 2, gold: 2, platinum: 2 },
       },
