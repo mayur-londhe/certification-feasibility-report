@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import Tooltip from "./Tooltip";
-
+import Igbc from "./assets/igbc.svg";
 const feasibilityData = [
   {
     name: "Sustainable Design",
@@ -902,11 +902,11 @@ const Header = ({ achievedPoints, isReportPage, handleDownloadPdf }) => {
     <header className="shadow-md rounded-lg bg-white mt-5 mb-5">
       {/* Main 3-column content */}
       <div className="flex justify-between items-start p-5 gap-x-4">
-        <div className="w-2/5 relative">
-          <h1 className="text-3xl font-bold text-gray-800 mt-8">
+        <div className="w-2/5 relative flex">
+          <img src={Igbc} alt="IGBC Logo" className="h-16 w-16 rounded-full" />
+          <h1 className="text-3xl font-bold text-gray-800 mt-3 ml-2">
             IGBC Green Homes
           </h1>
-          {/* Description is no longer here */}
         </div>
 
         <div className="w-1/5 text-center">
