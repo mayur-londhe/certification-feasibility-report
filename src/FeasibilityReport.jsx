@@ -667,40 +667,8 @@ const CreditCard = ({
   const isMaxDisabled = displayValue >= credit.pointsAvailable || !isSelected;
 
   const contentBlock = (
-    <div className="overflow-hidden">
-      <div className={`float-right flex items-center gap-2 ml-2`}>
-        <div
-          className={`text-right text-xs font-mono ${
-            isMultiImage ? "text-gray-200" : "text-gray-500"
-          }`}
-        >
-          <div>{creditId}</div>
-          {isMultiPart && (
-            <div className={isMultiImage ? "text-gray-400" : "text-gray-400"}>
-              {subId}
-            </div>
-          )}
-        </div>
-        {credit.tooltip && (
-          <Tooltip text={credit.tooltip}>
-            <svg
-              className={`w-5 h-5 ${
-                isMultiImage ? "text-gray-300" : "text-gray-400"
-              }`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              ></path>
-            </svg>
-          </Tooltip>
-        )}
-      </div>
+    <div className="flex flex-col justify-between h-full">
+      {/* Row 1: Checkbox + Display name */}
       <div className="flex items-start gap-2">
         <input
           type="checkbox"
@@ -708,17 +676,80 @@ const CreditCard = ({
           className={`mt-1 h-5 w-5 text-green-600 focus:ring-green-500 rounded flex-shrink-0 ${
             type === "required" ? "cursor-not-allowed" : "cursor-pointer"
           } ${isMultiImage ? "border-gray-500" : "border-gray-300"}`}
-          checked={isSelected} // This correctly uses the new `isSelected`
+          checked={isSelected}
           disabled={type === "required"}
           readOnly
         />
         <h4
-          className={`font-semibold text-base leading-tight ${
+          className={`font-semibold text-base mt-0.5 leading-tight ${
             isMultiImage ? "text-white" : "text-gray-800"
           }`}
         >
           {credit.displayText}
         </h4>
+      </div>
+
+      {/* Row 2: creditId/subId (left) and label (right) */}
+      <div className="flex items-center justify-between text-xs mt-2">
+        {/* LEFT SIDE (creditId + tooltip) */}
+        <div
+          className={`font-mono ${
+            isMultiImage ? "text-gray-200" : "text-gray-500"
+          }`}
+        >
+          <div className="flex items-center gap-1">
+            {!isMultiPart && <div>{creditId}</div>}
+            {isMultiPart && (
+              <div className={isMultiImage ? "text-gray-400" : "text-gray-400"}>
+                {subId}
+              </div>
+            )}
+            {credit.tooltip && (
+              <Tooltip text={credit.tooltip}>
+                <svg
+                  className={`w-4 h-4 ${
+                    isMultiImage ? "text-gray-300" : "text-gray-400"
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </Tooltip>
+            )}
+          </div>
+        </div>
+
+        {/* RIGHT SIDE (label + hover) */}
+        {currentStyle.label && (
+          <div className="relative group/label">
+            <div
+              className={`${currentStyle.labelClasses} text-[11px] font-bold px-2 py-[2px] rounded-full`}
+            >
+              {currentStyle.label}
+            </div>
+
+            {currentStyle.hoverText && (
+              <div
+                className="
+            absolute top-6 right-0
+            bg-gray-800 text-white text-[11px] rounded-md px-2 py-[2px]
+            opacity-0 group-hover/label:opacity-100 transition-opacity duration-200
+            pointer-events-none z-20
+            whitespace-nowrap overflow-hidden text-ellipsis
+          "
+              >
+                {currentStyle.hoverText}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -734,30 +765,6 @@ const CreditCard = ({
       }`}
       onClick={handleCardClick}
     >
-      {currentStyle.label && (
-        <div className="absolute top-2 right-2 z-10 group/label">
-          <div
-            className={`${currentStyle.labelClasses} text-xs font-bold px-2 py-1 rounded-full`}
-          >
-            {currentStyle.label}
-          </div>
-
-          {currentStyle.hoverText && (
-            <div
-              className="
-    absolute top-6 right-0
-    bg-gray-800 text-white text-[11px] rounded-md px-2 py-[2px]
-    opacity-0 group-hover/label:opacity-100 transition-opacity duration-200
-    pointer-events-none z-20
-    whitespace-nowrap overflow-hidden text-ellipsis
-  "
-            >
-              {currentStyle.hoverText}
-            </div>
-          )}
-        </div>
-      )}
-
       {isMultiImage ? (
         <div className="relative w-full h-48 grid grid-cols-2 gap-px bg-gray-200">
           {credit.image.slice(0, 4).map((imgSrc, index) => (
@@ -781,7 +788,7 @@ const CreditCard = ({
           <img
             src={imageUrl || "/placeholder.svg"}
             alt={credit.displayText}
-            className="w-full h-48 object-cover"
+            className="w-full h-48 object-fit-cover"
             onError={handleImageError}
           />
           <div className="p-4 flex-grow">{contentBlock}</div>
@@ -899,7 +906,7 @@ const Header = ({ achievedPoints, isReportPage, handleDownloadPdf }) => {
     </div>
   );
   return (
-    <header className="shadow-md rounded-lg bg-white mt-5 mb-5">
+    <header className="shadow-md rounded-lg bg-white mt-5 mb-5 header-container">
       {/* Main 3-column content */}
       <div className="flex justify-between items-start p-5 gap-x-4">
         <div className="w-2/5 relative flex">
@@ -941,13 +948,50 @@ const Header = ({ achievedPoints, isReportPage, handleDownloadPdf }) => {
 
           {/* Buttons (conditionally rendered) */}
           {isReportPage && (
-            <div className="flex justify-end gap-x-3 mt-4">
-              <button className="bg-white text-blue-600 border border-blue-600 font-bold py-2 px-6 rounded-lg hover:bg-blue-50 transition duration-300">
+            <div
+              data-hide-in-pdf
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "12px",
+                marginTop: "1rem",
+              }}
+            >
+              <button
+                style={{
+                  backgroundColor: "white",
+                  color: "#2563eb",
+                  border: "1px solid #2563eb",
+                  fontWeight: "bold",
+                  padding: "8px 24px",
+                  borderRadius: "8px",
+                  transition: "background-color 0.3s",
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.backgroundColor = "#eff6ff")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.backgroundColor = "white")
+                }
+              >
                 Schedule Demo
               </button>
               <button
                 onClick={handleDownloadPdf}
-                className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition duration-300"
+                style={{
+                  backgroundColor: "#2563eb",
+                  color: "white",
+                  fontWeight: "bold",
+                  padding: "8px 24px",
+                  borderRadius: "8px",
+                  transition: "background-color 0.3s",
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.backgroundColor = "#1d4ed8")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.backgroundColor = "#2563eb")
+                }
               >
                 Download Report (PDF)
               </button>
@@ -1069,23 +1113,29 @@ const MandatoryRequirements = ({ onNext, projectData, setProjectData }) => {
   const isDataFilled = projectData.name;
 
   return (
-    <div className="max-w-6xl mx-auto bg-white p-8 rounded-xl shadow-lg">
-      <h1 className="text-3xl font-bold text-center text-green-700 mb-2">
-        IGBC Green Homes Certification
-      </h1>
-      <p className="text-center text-gray-500 mb-8">
-        Step 1: Project Details & Mandatory Requirements
-      </p>
+    <div className="max-w-6xl mx-auto bg-white p-10 rounded-2xl shadow-xl border border-gray-100">
+      {/* Header Section */}
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-extrabold text-green-700 mb-3 tracking-tight">
+          IGBC Green Homes Certification
+        </h1>
 
-      {/* --- Project Details Form (Moved from previous component) --- */}
-      <div className="space-y-6 mb-10">
-        <h2 className="text-2xl font-semibold text-gray-800 border-b pb-2">
-          Project Details
-        </h2>
+        <p className="text-gray-700 text-lg leading-relaxed font-medium">
+          {" "}
+          <span className="bg-gradient-to-r from-green-600 to-green-400 bg-clip-text text-transparent font-semibold transition duration-300 hover:brightness-110">
+            This Blueprint is designed to give you a quick exposure of
+            categories and credits under IGBC Green Homes Certification.
+          </span>{" "}
+        </p>
+      </div>
+
+      {/* --- Project Details Form --- */}
+      <div className="bg-gray-50 p-6 rounded-xl shadow-inner space-y-6 mb-10">
+        {/* Project Name */}
         <div>
           <label
             htmlFor="projectName"
-            className="block text-sm font-medium text-gray-700"
+            className="block text-md font-semibold text-gray-700 mb-1"
           >
             Project Name
           </label>
@@ -1096,50 +1146,47 @@ const MandatoryRequirements = ({ onNext, projectData, setProjectData }) => {
             onChange={(e) =>
               setProjectData({ ...projectData, name: e.target.value })
             }
-            className="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+            placeholder="Enter your project name"
+            className="mt-1 block w-[320px] px-4 py-2 border border-gray-300 rounded-md shadow-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
           />
         </div>
 
-        {/* --- UPDATED CERTIFICATION LEVEL --- */}
+        {/* Certification Level */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-md font-semibold text-gray-700 mb-2">
             Desired Certification Level
           </label>
-          <div className="flex space-x-2">
+          <div className="flex space-x-3">
             {["Certified", "Silver", "Gold", "Platinum"].map((level) => (
               <button
                 key={level}
-                type="button" // Prevents form submission if nested
+                type="button"
                 onClick={() =>
                   setProjectData({ ...projectData, level: level.toLowerCase() })
                 }
                 className={`
-            flex-1 px-4 py-2 rounded-md border font-medium transition-colors duration-200
-            focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2
-            ${
-              // Conditional styling for active vs. inactive
-              projectData.level === level.toLowerCase()
-                ? "bg-green-600 text-white border-green-600" // Active
-                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50" // Inactive
-            }
-          `}
+                flex-1 px-4 py-2 rounded-md border font-medium transition-colors duration-200
+                focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2
+                ${
+                  projectData.level === level.toLowerCase()
+                    ? "bg-green-600 text-white border-green-600"
+                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                }
+              `}
               >
                 {level}
               </button>
             ))}
           </div>
         </div>
-
-        <p className="text-gray-700 mb-8 ml-[145px]">
-          This Blueprint is designed to give you a quick exposure of categories,
-          credits under IGBC green homes certification.
-        </p>
       </div>
+
+      {/* --- Mandatory Requirements --- */}
       <div className="text-center">
-        <div className="flex justify-center mb-4">
-          <div className="bg-red-100 p-3 rounded-full">
+        <div className="flex justify-center mb-5">
+          <div className="bg-green-50 p-4 rounded-full shadow-sm">
             <svg
-              className="w-8 h-8 text-red-500"
+              className="w-8 h-8 text-green-600"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -1153,10 +1200,14 @@ const MandatoryRequirements = ({ onNext, projectData, setProjectData }) => {
             </svg>
           </div>
         </div>
-        <h2 className="text-2xl font-bold mb-2">Mandatory Requirements</h2>
+
+        <h2 className="text-2xl font-bold text-green-700 mb-2">
+          Mandatory Requirements
+        </h2>
         <p className="text-gray-500 mb-8">
           All projects must comply with these to be eligible for certification.
         </p>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left text-sm sm:text-base">
           {[
             "Local Building Regulations",
@@ -1192,12 +1243,11 @@ const MandatoryRequirements = ({ onNext, projectData, setProjectData }) => {
           ))}
         </div>
       </div>
-      {/* --- End of Mandatory Requirements List --- */}
 
       {/* --- Navigation --- */}
-      <div className="mt-10 text-center">
+      <div className="mt-12 text-center">
         {!isDataFilled && (
-          <p className="text-red-500 mb-4">
+          <p className="text-red-500 mb-4 text-sm">
             Please provide project name to continue
           </p>
         )}
@@ -1205,10 +1255,10 @@ const MandatoryRequirements = ({ onNext, projectData, setProjectData }) => {
           <button
             onClick={onNext}
             disabled={!isDataFilled}
-            className={`font-bold py-3 px-8 rounded-lg transition duration-300 flex items-center ${
+            className={`font-bold py-3 px-10 rounded-lg transition-all duration-300 flex items-center shadow-md ${
               !isDataFilled
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-green-600 text-white hover:bg-green-700"
+                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                : "bg-green-600 text-white hover:bg-green-700 hover:shadow-lg"
             }`}
           >
             Acknowledge & Proceed{" "}
@@ -1540,10 +1590,13 @@ const ReportPage = ({ onBack, projectData, totalPoints, attemptedCredits }) => {
 
   const handleDownloadPdf = () => {
     const reportElement = reportRef.current;
-
     if (!reportElement) return alert("Report element not found.");
 
     alert("Generating PDF... This may take a moment.");
+
+    // Hide the buttons temporarily
+    const buttons = reportElement.querySelectorAll("[data-hide-in-pdf]");
+    buttons.forEach((el) => (el.style.display = "none"));
 
     html2canvas(reportElement, { scale: 2, useCORS: true })
       .then((canvas) => {
@@ -1562,6 +1615,10 @@ const ReportPage = ({ onBack, projectData, totalPoints, attemptedCredits }) => {
       .catch((err) => {
         console.error("Error generating PDF:", err);
         alert("Could not generate PDF. Please try again.");
+      })
+      .finally(() => {
+        // Restore button visibility
+        buttons.forEach((el) => (el.style.display = ""));
       });
   };
 
@@ -1601,8 +1658,9 @@ const ReportPage = ({ onBack, projectData, totalPoints, attemptedCredits }) => {
       <div className="mt-8 flex justify-between items-center">
         <button
           onClick={onBack}
-          className="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300 transition duration-300"
+          className="flex items-center gap-2 bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300 transition duration-300"
         >
+          <span className="text-lg">←</span>
           Back
         </button>
       </div>
@@ -1777,19 +1835,22 @@ export default function Feasibility() {
         <div className="bg-white shadow-lg p-4 mt-5 rounded-md border-gray-200 z-50">
           <div className="max-w-screen-2xl mx-auto flex justify-between items-center px-4 sm:px-6 lg:px-8">
             {/* Back Button */}
+            {/* Back Button */}
             <button
               onClick={onBack}
-              className="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300 transition duration-300"
+              className="flex items-center gap-2 bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300 transition duration-300"
             >
+              <span className="text-lg">←</span>
               {page === 2 ? "Mandatory requirements" : "Previous Categories"}
             </button>
 
             {/* Next Button */}
             <button
               onClick={onNext}
-              className="bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700 transition duration-300"
+              className="flex items-center gap-2 bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700 transition duration-300"
             >
-              {page === 4 ? "To Report" : "Next Categories"}
+              {page === 4 ? "Report" : "Next Categories"}
+              <span className="text-lg">→</span>
             </button>
           </div>
         </div>
