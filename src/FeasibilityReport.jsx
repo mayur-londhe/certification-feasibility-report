@@ -13,8 +13,7 @@ const feasibilityData = [
       {
         alias: "IGBC_GH-SD-CR-4",
         name: "Universal Design",
-        displayText:
-          "Differently Abled and Senior citizens friendly building as per NBC (National Building Code)",
+        displayText: "Differently Abled and Senior citizens friendly building",
         tooltip:
           "Preferred Car Parks, Accessible Restrooms, Wheelchai & Stretcher Provision, Level Pathways / Ramped Access, Wide Walkways, Braille and audio assistance in lifts, One lift with minimum dimensions to allow a stretcher, Visual warning signages in common & exterior areas",
         credits: ["SD CR 4"],
@@ -563,8 +562,6 @@ const certificationLevels = {
   Platinum: { min: 80, max: 100, color: "bg-purple-200 text-purple-800" },
 };
 
-// --- Helper Components ---
-
 const CreditCard = ({
   credit,
   attemptedCredit,
@@ -575,18 +572,30 @@ const CreditCard = ({
   isEditing,
   creditCounts,
 }) => {
-  const isSelected = !!attemptedCredit;
-  const points = isSelected ? attemptedCredit.points : 0;
-  const imageUrl =
-    credit.image ||
-    `https://placehold.co/600x400/e2e8f0/4a5568?text=${encodeURIComponent(
-      credit.displayText.split(" ").slice(0, 3).join(" ")
-    )}`;
+  // =================================================================
+  // --- CHANGE 5: Update component logic to read new state shape ---
+  // `attemptedCredit` can now be an object with `isSelected: false`
+  // =================================================================
+  const isSelected = attemptedCredit?.isSelected ?? false;
+  const points = attemptedCredit?.points ?? 0; // Get points regardless of selection
 
-  const [editValue, setEditValue] = useState(points);
+  const isMultiImage = Array.isArray(credit.image) && credit.image.length > 0;
+
+  const imageUrl =
+    !isMultiImage &&
+    (credit.image ||
+      `https://placehold.co/600x400/e2e8f0/4a5568?text=${encodeURIComponent(
+        credit.displayText.split(" ").slice(0, 3).join(" ")
+      )}`);
+
+  const [displayValue, setDisplayValue] = useState(points);
 
   useEffect(() => {
-    setEditValue(points);
+    // This effect now correctly updates the display
+    // only when the `points` value in the main state changes
+    // (e.g., from '+' or '-')
+    // It no longer resets to 0 on un-check, because `points` prop won't be 0.
+    setDisplayValue(points);
   }, [points]);
 
   const creditId = credit.credits[0];
@@ -595,37 +604,124 @@ const CreditCard = ({
 
   const typeStyles = {
     required: {
-      label: "REQUIRED",
-      labelClasses: "bg-red-100 text-red-700",
+      label: "Go-To",
+      labelClasses: "bg-green-100 text-green-700",
       ring: "ring-red-500",
+      hoverText: "Most attempted, low effort",
     },
     recommended: {
-      label: "RECOMMENDED",
+      label: "Targeted",
       labelClasses: "bg-blue-100 text-blue-700",
       ring: "ring-blue-500",
+      hoverText: "Medium Effort, recommended",
     },
-    other: { label: null, labelClasses: "", ring: "ring-gray-300" },
+    other: {
+      label: "Niche",
+      labelClasses: "bg-red-300 text-red-900",
+      ring: "ring-blue-300",
+      hoverText: "High effort, Least common",
+    },
   };
 
   const currentStyle = typeStyles[type];
 
   const handleCardClick = () => {
     if (type !== "required") {
+      // `isSelected` here is the *current* state
+      // `onToggle` expects the *new* desired state
       onToggle(!isSelected, credit);
     }
   };
 
-  const handleSave = () => {
-    onSaveEdit(credit.alias, editValue, credit.pointsAvailable);
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      handleSave();
-    } else if (e.key === "Escape") {
-      onSaveEdit(credit.alias, points, credit.pointsAvailable); // Revert to original points on escape
+  const handleIncrement = (e) => {
+    e.stopPropagation();
+    // We must check `isSelected` here.
+    // If we allow incrementing while unselected,
+    // the `handleSaveEdit` will force `isSelected: true`,
+    // which is the correct and desired behavior.
+    if (displayValue < credit.pointsAvailable) {
+      const newValue = displayValue + 1;
+      setDisplayValue(newValue);
+      onSaveEdit(credit.alias, newValue, credit.pointsAvailable);
     }
   };
+
+  const handleDecrement = (e) => {
+    e.stopPropagation();
+    if (displayValue > 0) {
+      const newValue = displayValue - 1;
+      setDisplayValue(newValue);
+      onSaveEdit(credit.alias, newValue, credit.pointsAvailable);
+    }
+  };
+
+  const handleImageError = (e) => {
+    e.target.onerror = null;
+    e.target.src =
+      "https://placehold.co/600x400/e2e8f0/4a5568?text=Image+Not+Found";
+  };
+
+  // This logic is still correct. Buttons should be disabled
+  // if the card is not selected.
+  const isMinDisabled = displayValue <= 0 || !isSelected;
+  const isMaxDisabled = displayValue >= credit.pointsAvailable || !isSelected;
+
+  const contentBlock = (
+    <div className="overflow-hidden">
+      <div className={`float-right flex items-center gap-2 ml-2`}>
+        <div
+          className={`text-right text-xs font-mono ${
+            isMultiImage ? "text-gray-200" : "text-gray-500"
+          }`}
+        >
+          <div>{creditId}</div>
+          {isMultiPart && (
+            <div className={isMultiImage ? "text-gray-400" : "text-gray-400"}>
+              {subId}
+            </div>
+          )}
+        </div>
+        {credit.tooltip && (
+          <Tooltip text={credit.tooltip}>
+            <svg
+              className={`w-5 h-5 ${
+                isMultiImage ? "text-gray-300" : "text-gray-400"
+              }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+          </Tooltip>
+        )}
+      </div>
+      <div className="flex items-start gap-2">
+        <input
+          type="checkbox"
+          id={credit.alias}
+          className={`mt-1 h-5 w-5 text-green-600 focus:ring-green-500 rounded flex-shrink-0 ${
+            type === "required" ? "cursor-not-allowed" : "cursor-pointer"
+          } ${isMultiImage ? "border-gray-500" : "border-gray-300"}`}
+          checked={isSelected} // This correctly uses the new `isSelected`
+          disabled={type === "required"}
+          readOnly
+        />
+        <h4
+          className={`font-semibold text-base leading-tight ${
+            isMultiImage ? "text-white" : "text-gray-800"
+          }`}
+        >
+          {credit.displayText}
+        </h4>
+      </div>
+    </div>
+  );
 
   return (
     <div
@@ -639,116 +735,241 @@ const CreditCard = ({
       onClick={handleCardClick}
     >
       {currentStyle.label && (
-        <div
-          className={`absolute top-2 right-2 ${currentStyle.labelClasses} text-xs font-bold px-2 py-1 rounded-full z-10`}
-        >
-          {currentStyle.label}
+        <div className="absolute top-2 right-2 z-10 group/label">
+          <div
+            className={`${currentStyle.labelClasses} text-xs font-bold px-2 py-1 rounded-full`}
+          >
+            {currentStyle.label}
+          </div>
+
+          {currentStyle.hoverText && (
+            <div
+              className="
+    absolute top-6 right-0
+    bg-gray-800 text-white text-[11px] rounded-md px-2 py-[2px]
+    opacity-0 group-hover/label:opacity-100 transition-opacity duration-200
+    pointer-events-none z-20
+    whitespace-nowrap overflow-hidden text-ellipsis
+  "
+            >
+              {currentStyle.hoverText}
+            </div>
+          )}
         </div>
       )}
 
-      <img
-        src={imageUrl}
-        alt={credit.displayText}
-        className="w-full h-48 object-cover"
-        onError={(e) => {
-          e.target.onerror = null;
-          e.target.src =
-            "https://placehold.co/600x400/e2e8f0/4a5568?text=Image+Not+Found";
-        }}
-      />
-
-      <div className="p-4 flex-grow">
-        <h4 className="font-semibold text-gray-800 text-base leading-tight h-12">
-          {credit.displayText}
-        </h4>
-      </div>
-
-      <div className="p-3 flex justify-between items-center bg-gray-50 border-t">
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            id={credit.alias}
-            className={`h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300 rounded ${
-              type === "required" ? "cursor-not-allowed" : "cursor-pointer"
-            }`}
-            checked={isSelected}
-            disabled={type === "required"}
-            readOnly
-          />
-          {isEditing ? (
-            <input
-              type="number"
-              value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
-              onBlur={handleSave}
-              onKeyDown={handleKeyDown}
-              className="ml-2 w-16 text-center font-bold text-lg border-green-500 border-2 rounded-md"
-              autoFocus
+      {isMultiImage ? (
+        <div className="relative w-full h-48 grid grid-cols-2 gap-px bg-gray-200">
+          {credit.image.slice(0, 4).map((imgSrc, index) => (
+            <img
+              key={index}
+              src={imgSrc || "/placeholder.svg"}
+              alt={`${credit.displayText} - view ${index + 1}`}
+              className="w-full h-full object-cover"
+              onError={handleImageError}
             />
-          ) : (
-            <label
-              htmlFor={credit.alias}
-              className={`ml-2 font-bold text-lg tabular-nums ${
+          ))}
+          <div
+            className="absolute bottom-0 left-0 right-0 p-4 flex flex-col justify-end h-full
+                      bg-gradient-to-t from-black/80 via-black/40 to-transparent"
+          >
+            <div className="mt-auto">{contentBlock}</div>
+          </div>
+        </div>
+      ) : (
+        <>
+          <img
+            src={imageUrl || "/placeholder.svg"}
+            alt={credit.displayText}
+            className="w-full h-48 object-cover"
+            onError={handleImageError}
+          />
+          <div className="p-4 flex-grow">{contentBlock}</div>
+        </>
+      )}
+
+      <div className="p-3 bg-gray-50 border-t">
+        <div className="flex items-center w-full">
+          <button
+            onClick={handleDecrement}
+            disabled={isMinDisabled}
+            className={`flex-1 py-1.5 px-4 flex items-center justify-center rounded-l-md text-lg font-bold transition-colors ${
+              isMinDisabled
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                : "bg-green-100 text-green-700 hover:bg-green-200"
+            }`}
+          >
+            −
+          </button>
+
+          <div className="text-center px-4 py-1.5 bg-white border-t border-b border-gray-300 -mx-px z-10">
+            <span
+              className={`font-bold text-lg tabular-nums ${
                 isSelected ? "text-green-700" : "text-gray-600"
               }`}
             >
-              {points}
-            </label>
-          )}
-          <span className="text-gray-500 text-sm">
-            {" "}
-            / {credit.pointsAvailable} Pts
-          </span>
-          {type !== "required" && isSelected && !isEditing && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onStartEdit(credit.alias);
-              }}
-              className="ml-2 p-1 rounded-full hover:bg-green-100 text-gray-500 hover:text-green-700 transition"
-              aria-label="Edit points"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L16.732 3.732z"
-                ></path>
-              </svg>
-            </button>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="text-right text-xs text-gray-500 font-mono">
-            <div>{creditId}</div>
-            {isMultiPart && <div className="text-gray-400">{subId}</div>}
+              {displayValue}
+            </span>
+            <span className="text-gray-500 text-sm">
+              {" "}
+              / {credit.pointsAvailable} Pts
+            </span>
           </div>
-          {credit.tooltip && (
-            <Tooltip text={credit.tooltip}>
-              <svg
-                className="w-5 h-5 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                ></path>
-              </svg>
-            </Tooltip>
-          )}
+
+          <button
+            onClick={handleIncrement}
+            disabled={isMaxDisabled}
+            className={`flex-1 py-1.5 px-4 flex items-center justify-center rounded-r-md text-lg font-bold transition-colors ${
+              isMaxDisabled
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                : "bg-green-100 text-green-700 hover:bg-green-200"
+            }`}
+          >
+            +
+          </button>
         </div>
       </div>
     </div>
+  );
+};
+
+const certificationPoints = [
+  { level: "Certified", points: 50 },
+  { level: "Silver", points: 60 },
+  { level: "Gold", points: 70 },
+  { level: "Platinum", points: 80 },
+];
+
+const Header = ({ achievedPoints, isReportPage, handleDownloadPdf }) => {
+  const getCurrentLevelInfo = () => {
+    let currentLevel = { level: "Uncertified" };
+    for (let i = certificationPoints.length - 1; i >= 0; i--) {
+      if (achievedPoints >= certificationPoints[i].points) {
+        currentLevel = certificationPoints[i];
+        break;
+      }
+    }
+    return currentLevel;
+  };
+
+  // Determines the next certification milestone.
+  const getNextMilestone = () => {
+    for (const level of certificationPoints) {
+      if (achievedPoints < level.points) {
+        return level;
+      }
+    }
+    return null;
+  };
+
+  const { level } = getCurrentLevelInfo();
+  const nextMilestone = getNextMilestone();
+
+  const tooltipContent = (
+    <div>
+      <h4 className="font-bold text-lg mb-2">Certification Levels</h4>
+      <div className="grid grid-cols-3 gap-2 text-sm">
+        <div className="font-semibold">Level</div>
+        <div className="font-semibold text-center">Points</div>
+        <div className="font-semibold text-center">Status</div>
+        {certificationPoints.map((l) => {
+          const pointsNeeded = l.points - achievedPoints;
+          const isAchieved = achievedPoints >= l.points;
+          return (
+            <React.Fragment key={l.level}>
+              <div className={isAchieved ? "font-bold" : ""}>{l.level}</div>
+              <div className={`text-center ${isAchieved ? "font-bold" : ""}`}>
+                {l.points}+
+              </div>
+              <div className="text-center">
+                {isAchieved ? (
+                  <span className="text-green-500 font-bold">Achieved</span>
+                ) : (
+                  <span className="text-red-500">{pointsNeeded} to go</span>
+                )}
+              </div>
+            </React.Fragment>
+          );
+        })}
+        <div className="col-span-3 mt-2 text-xs text-center text-gray-500">
+          You are currently at{" "}
+          <span className="font-bold">{achievedPoints}</span> points.
+        </div>
+      </div>
+    </div>
+  );
+  return (
+    <header className="shadow-md rounded-lg bg-white mt-5 mb-5">
+      {/* Main 3-column content */}
+      <div className="flex justify-between items-start p-5 gap-x-4">
+        <div className="w-2/5 relative">
+          <h1 className="text-3xl font-bold text-gray-800 mt-8">
+            IGBC Green Homes
+          </h1>
+          {/* Description is no longer here */}
+        </div>
+
+        <div className="w-1/5 text-center">
+          <p className="text-4xl font-bold mt-8">{level}</p>
+        </div>
+
+        <div className="w-2/5 text-right">
+          <div className="flex items-baseline justify-end">
+            <span
+              className="text-5xl font-extrabold"
+              style={{ color: "#00C58A" }}
+            >
+              {achievedPoints}
+            </span>
+            <span className="text-2xl font-bold text-gray-500">/100</span>
+          </div>
+          {nextMilestone && (
+            <div className="text-xs text-right mt-1">
+              <span className="font-semibold text-gray-600">
+                Next Milestone:{" "}
+              </span>
+              <span className="font-bold" style={{ color: "#00C58A" }}>
+                {nextMilestone.level}
+              </span>
+              <span className="text-gray-500"> (</span>
+              <span className="text-red-500 font-bold">
+                {nextMilestone.points - achievedPoints}
+              </span>
+              <span className="text-gray-500"> points to go)</span>
+            </div>
+          )}
+
+          {/* Buttons (conditionally rendered) */}
+          {isReportPage && (
+            <div className="flex justify-end gap-x-3 mt-4">
+              <button className="bg-white text-blue-600 border border-blue-600 font-bold py-2 px-6 rounded-lg hover:bg-blue-50 transition duration-300">
+                Schedule Demo
+              </button>
+              <button
+                onClick={handleDownloadPdf}
+                className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition duration-300"
+              >
+                Download Report (PDF)
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* --- MOVED DESCRIPTION --- */}
+      {/* This single-line description now sits at the bottom */}
+      {!isReportPage && (
+        <div className="border-t border-gray-200 px-5 py-3">
+          <p className="text-gray-600 text-sm">
+            For each category, the credits are divided into Go-To, Targeted,
+            Niche buckets. The Go-To credits are baseline required to achieve
+            the desired certification level. Between Targeted and Niche, you can
+            select different credits and edit the points to achieve the desired
+            certification level.
+          </p>
+        </div>
+      )}
+    </header>
   );
 };
 
@@ -844,15 +1065,23 @@ const CategorySection = ({
   );
 };
 
-// --- Page Components ---
-const ProjectDetails = ({ onNext, projectData, setProjectData }) => {
+const MandatoryRequirements = ({ onNext, projectData, setProjectData }) => {
+  const isDataFilled = projectData.name;
+
   return (
-    <div className="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+    <div className="max-w-6xl mx-auto bg-white p-8 rounded-xl shadow-lg">
       <h1 className="text-3xl font-bold text-center text-green-700 mb-2">
         IGBC Green Homes Certification
       </h1>
-      <p className="text-center text-gray-500 mb-8">Feasibility Workflow</p>
-      <div className="space-y-6">
+      <p className="text-center text-gray-500 mb-8">
+        Step 1: Project Details & Mandatory Requirements
+      </p>
+
+      {/* --- Project Details Form (Moved from previous component) --- */}
+      <div className="space-y-6 mb-10">
+        <h2 className="text-2xl font-semibold text-gray-800 border-b pb-2">
+          Project Details
+        </h2>
         <div>
           <label
             htmlFor="projectName"
@@ -870,154 +1099,141 @@ const ProjectDetails = ({ onNext, projectData, setProjectData }) => {
             className="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
           />
         </div>
+
+        {/* --- UPDATED CERTIFICATION LEVEL --- */}
         <div>
-          <label
-            htmlFor="builtUpArea"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Built-up Area (sq. m)
-          </label>
-          <input
-            type="number"
-            id="builtUpArea"
-            value={projectData.area || ""}
-            onChange={(e) =>
-              setProjectData({ ...projectData, area: e.target.value })
-            }
-            className="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="certificationLevel"
-            className="block text-sm font-medium text-gray-700"
-          >
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Desired Certification Level
           </label>
-          <select
-            id="certificationLevel"
-            value={projectData.level || "certified"}
-            onChange={(e) =>
-              setProjectData({ ...projectData, level: e.target.value })
+          <div className="flex space-x-2">
+            {["Certified", "Silver", "Gold", "Platinum"].map((level) => (
+              <button
+                key={level}
+                type="button" // Prevents form submission if nested
+                onClick={() =>
+                  setProjectData({ ...projectData, level: level.toLowerCase() })
+                }
+                className={`
+            flex-1 px-4 py-2 rounded-md border font-medium transition-colors duration-200
+            focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2
+            ${
+              // Conditional styling for active vs. inactive
+              projectData.level === level.toLowerCase()
+                ? "bg-green-600 text-white border-green-600" // Active
+                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50" // Inactive
             }
-            className="mt-1 block w-full px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-          >
-            <option value="certified">Certified</option>
-            <option value="silver">Silver</option>
-            <option value="gold">Gold</option>
-            <option value="platinum">Platinum</option>
-          </select>
+          `}
+              >
+                {level}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <p className="text-gray-700 mb-8 ml-[145px]">
+          This Blueprint is designed to give you a quick exposure of categories,
+          credits under IGBC green homes certification.
+        </p>
+      </div>
+      <div className="text-center">
+        <div className="flex justify-center mb-4">
+          <div className="bg-red-100 p-3 rounded-full">
+            <svg
+              className="w-8 h-8 text-red-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+              ></path>
+            </svg>
+          </div>
+        </div>
+        <h2 className="text-2xl font-bold mb-2">Mandatory Requirements</h2>
+        <p className="text-gray-500 mb-8">
+          All projects must comply with these to be eligible for certification.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left text-sm sm:text-base">
+          {[
+            "Local Building Regulations",
+            "Soil Erosion Control",
+            "Water Efficient Plumbing Fixtures",
+            "Rainwater Harvesting",
+            "HCFC Free Equipment",
+            "Minimum Energy Performance",
+            "Separation of House-hold Waste",
+            "Minimum Daylighting",
+            "Ventilation Design",
+            "No Smoking Policy",
+          ].map((item) => (
+            <div
+              key={item}
+              className="bg-red-50 p-4 rounded-lg flex items-center"
+            >
+              <svg
+                className="w-5 h-5 text-red-500 mr-3 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M5 13l4 4L19 7"
+                ></path>
+              </svg>
+              {item}
+            </div>
+          ))}
         </div>
       </div>
+      {/* --- End of Mandatory Requirements List --- */}
+
+      {/* --- Navigation --- */}
       <div className="mt-10 text-center">
-        {(!projectData.name || !projectData.area) && (
+        {!isDataFilled && (
           <p className="text-red-500 mb-4">
-            Please provide both project name and built-up area to continue
+            Please provide project name to continue
           </p>
         )}
-        <button
-          onClick={onNext}
-          disabled={!projectData.name || !projectData.area}
-          className={`font-bold py-3 px-8 rounded-lg transition duration-300 ${
-            !projectData.name || !projectData.area
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-green-600 text-white hover:bg-green-700"
-          }`}
-        >
-          Start Feasibility Check
-        </button>
+        <div className="flex justify-center space-x-4">
+          <button
+            onClick={onNext}
+            disabled={!isDataFilled}
+            className={`font-bold py-3 px-8 rounded-lg transition duration-300 flex items-center ${
+              !isDataFilled
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-green-600 text-white hover:bg-green-700"
+            }`}
+          >
+            Acknowledge & Proceed{" "}
+            <svg
+              className="w-5 h-5 ml-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M17 8l4 4m0 0l-4 4m4-4H3"
+              ></path>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
-const MandatoryRequirements = ({ onNext, onBack }) => (
-  <div className="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg text-center">
-    <div className="flex justify-center mb-4">
-      <div className="bg-red-100 p-3 rounded-full">
-        <svg
-          className="w-8 h-8 text-red-500"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-          ></path>
-        </svg>
-      </div>
-    </div>
-    <h1 className="text-2xl font-bold mb-2">Mandatory Requirements</h1>
-    <p className="text-gray-500 mb-8">
-      All projects must comply with these to be eligible for certification.
-    </p>
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left text-sm sm:text-base">
-      {[
-        "Local Building Regulations",
-        "Soil Erosion Control",
-        "Water Efficient Plumbing Fixtures",
-        "Rainwater Harvesting",
-        "HCFC Free Equipment",
-        "Minimum Energy Performance",
-        "Separation of House-hold Waste",
-        "Minimum Daylighting",
-        "Ventilation Design",
-        "No Smoking Policy",
-      ].map((item) => (
-        <div key={item} className="bg-red-50 p-4 rounded-lg flex items-center">
-          <svg
-            className="w-5 h-5 text-red-500 mr-3 flex-shrink-0"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M5 13l4 4L19 7"
-            ></path>
-          </svg>
-          {item}
-        </div>
-      ))}
-    </div>
-    <div className="mt-8 flex justify-center space-x-4">
-      <button
-        onClick={onBack}
-        className="bg-gray-200 text-gray-700 font-bold py-2 px-6 rounded-lg hover:bg-gray-300 transition duration-300"
-      >
-        Back
-      </button>
-      <button
-        onClick={onNext}
-        className="bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700 transition duration-300 flex items-center"
-      >
-        Acknowledge & Proceed{" "}
-        <svg
-          className="w-5 h-5 ml-2"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M17 8l4 4m0 0l-4 4m4-4H3"
-          ></path>
-        </svg>
-      </button>
-    </div>
-  </div>
-);
-
 const CreditsPage = ({
-  onNext,
-  onBack,
+  totalPoints,
   categoryIndices,
   projectData,
   attemptedCredits,
@@ -1026,32 +1242,60 @@ const CreditsPage = ({
 }) => {
   const [editingAlias, setEditingAlias] = useState(null); // State for editing
 
-  const handleToggleCredit = (isSelected, credit) => {
-    const newAttempted = { ...attemptedCredits };
-    if (isSelected) {
-      newAttempted[credit.alias] = {
-        points: credit.pointsAvailable, // Default to max points on selection
-        max: credit.pointsAvailable,
-      };
-    } else {
-      delete newAttempted[credit.alias];
-      if (editingAlias === credit.alias) {
-        setEditingAlias(null); // Cancel edit if card is deselected
+  // =================================================================
+  // --- CHANGE 3: Update `handleToggleCredit` to flip `isSelected` flag ---
+  // =================================================================
+  const handleToggleCredit = (newIsSelectedState, credit) => {
+    const alias = credit.alias;
+    setAttemptedCredits((prev) => {
+      const newAttempted = { ...prev };
+      const currentCredit = newAttempted[alias];
+
+      if (newIsSelectedState) {
+        // User is CHECKING the card
+        if (currentCredit) {
+          // It exists, just mark it as selected
+          currentCredit.isSelected = true;
+        } else {
+          // It's new, create it with points: 0 and isSelected: true
+          newAttempted[alias] = {
+            points: 0, // Default to 0 points as per last request
+            max: credit.pointsAvailable,
+            isSelected: true,
+          };
+        }
+      } else {
+        // User is UN-CHECKING the card
+        if (currentCredit) {
+          // It exists, just mark it as NOT selected
+          // The points are preserved in the object.
+          currentCredit.isSelected = false;
+        }
+        // If it doesn't exist, do nothing (this shouldn't happen)
       }
-    }
-    setAttemptedCredits(newAttempted);
+      return newAttempted;
+    });
   };
 
+  // =================================================================
+  // --- CHANGE 4: Update `handleSaveEdit` to also set `isSelected: true` ---
+  // =================================================================
   const handleSaveEdit = (alias, newPointsStr, maxPoints) => {
     const newPoints = parseInt(newPointsStr, 10);
     if (!isNaN(newPoints) && newPoints >= 0 && newPoints <= maxPoints) {
-      setAttemptedCredits((prev) => ({
-        ...prev,
-        [alias]: { ...prev[alias], points: newPoints },
-      }));
+      setAttemptedCredits((prev) => {
+        const currentCredit = prev[alias] || {}; // Get current or new obj
+        return {
+          ...prev,
+          [alias]: {
+            ...currentCredit,
+            points: newPoints,
+            max: maxPoints, // Ensure max is set if it's new
+            isSelected: true, // Force selection on point change
+          },
+        };
+      });
     } else {
-      // The user's original code used alert().
-      // In a real app, we'd use a modal, but we'll keep the user's requested behavior.
       alert(`Please enter a valid number between 0 and ${maxPoints}.`);
     }
     setEditingAlias(null); // Exit editing mode
@@ -1060,8 +1304,11 @@ const CreditsPage = ({
   return (
     <div className="bg-transparent p-0 rounded-xl">
       <div className="space-y-8">
+        <Header achievedPoints={totalPoints} />
         {categoryIndices.map((index) => (
           <CategorySection
+            totalPoints={totalPoints}
+            projectData={projectData}
             key={feasibilityData[index].alias}
             category={feasibilityData[index]}
             desiredLevel={projectData.level}
@@ -1081,10 +1328,6 @@ const CreditsPage = ({
 
 // --- NEW/UPDATED REPORT COMPONENTS ---
 
-/**
- * NEW: ReportCreditCard
- * This component is styled to match the user's snippet for a "CreditCard".
- */
 const ReportCreditCard = ({ credit, achievedPoints, isMandatory }) => {
   // Determine compliance and styling
   const isCompliant = achievedPoints > 0;
@@ -1163,8 +1406,13 @@ const CategoryReportColumn = ({ category, attemptedCredits }) => {
     groups[creditId].totalPoints += credit.pointsAvailable;
 
     // Add achieved points
-    groups[creditId].achievedPoints +=
-      attemptedCredits[credit.alias]?.points || 0;
+    // =================================================================
+    // --- REPORT FIX: Only count points if `isSelected` is true ---
+    // =================================================================
+    const attempted = attemptedCredits[credit.alias];
+    if (attempted && attempted.isSelected) {
+      groups[creditId].achievedPoints += attempted.points || 0;
+    }
 
     // Special cases for max points
     if (creditId === "SD CR 3") {
@@ -1323,32 +1571,11 @@ const ReportPage = ({ onBack, projectData, totalPoints, attemptedCredits }) => {
     <div className="bg-white p-4 sm:p-6 lg:p-8 rounded-xl shadow-lg">
       <div ref={reportRef} className="bg-white p-6">
         {/* Report Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b pb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-green-700">
-              IGBC Green Homes
-            </h1>
-            <p className="text-lg text-gray-600 flex items-center gap-2">
-              Project: {projectData.name || "N/A"} -{" "}
-              <span className="font-bold">{currentLevelName}</span>{" "}
-              <span
-                className={`w-3 h-3 rounded-full ${certificationLevels[currentLevelName].color}`}
-              ></span>
-            </p>
-          </div>
-          <div className="text-right mt-4 sm:mt-0">
-            <div className="text-4xl font-bold text-gray-800">
-              {totalPoints}
-              <span className="text-2xl text-gray-500">/100</span>
-            </div>
-            {nextLevelName && (
-              <p className="text-sm text-blue-600 font-semibold">
-                Next Milestone: {nextLevelName} ({pointsForNext - totalPoints}{" "}
-                points to go)
-              </p>
-            )}
-          </div>
-        </div>
+        <Header
+          achievedPoints={totalPoints}
+          isReportPage={true}
+          handleDownloadPdf={handleDownloadPdf}
+        />
 
         {/* Progress Bar */}
         <div className="mb-8">
@@ -1378,12 +1605,6 @@ const ReportPage = ({ onBack, projectData, totalPoints, attemptedCredits }) => {
         >
           Back
         </button>
-        <button
-          onClick={handleDownloadPdf}
-          className="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition duration-300"
-        >
-          Download Report (PDF)
-        </button>
       </div>
     </div>
   );
@@ -1412,10 +1633,15 @@ export default function Feasibility() {
     return counts;
   }, []);
 
+  // =================================================================
+  // --- CHANGE 2: Update `totalPoints` to check `isSelected` flag ---
+  // =================================================================
   const totalPoints = useMemo(() => {
     return Math.round(
       Object.values(attemptedCredits).reduce(
-        (sum, credit) => sum + (credit.points || 0),
+        (sum, credit) =>
+          // Only add points if the credit is explicitly selected
+          sum + (credit.isSelected ? credit.points || 0 : 0),
         0
       )
     );
@@ -1432,8 +1658,11 @@ export default function Feasibility() {
     return { currentLevelName: level, color: certificationLevels[level].color };
   }, [totalPoints]);
 
+  // =================================================================
+  // --- CHANGE 1: Update `useEffect` to add `isSelected: true` ---
+  // =================================================================
   useEffect(() => {
-    if (page === 3) {
+    if (page === 2) {
       const initialCredits = {};
       const level = projectData.level;
       feasibilityData.forEach((cat) => {
@@ -1441,6 +1670,7 @@ export default function Feasibility() {
           initialCredits[c.alias] = {
             points: c.targetPoints[level],
             max: c.pointsAvailable,
+            isSelected: true, // Add selected flag
           };
         });
         cat.nudges.forEach((c) => {
@@ -1448,6 +1678,7 @@ export default function Feasibility() {
             initialCredits[c.alias] = {
               points: c.targetPoints[level],
               max: c.pointsAvailable,
+              isSelected: true, // Add selected flag
             };
           }
         });
@@ -1477,15 +1708,14 @@ export default function Feasibility() {
     switch (page) {
       case 1:
         return (
-          <ProjectDetails
+          <MandatoryRequirements
             projectData={projectData}
             setProjectData={setProjectData}
             onNext={onNext}
+            onBack={onBack}
           />
         );
       case 2:
-        return <MandatoryRequirements onNext={onNext} onBack={onBack} />;
-      case 3:
         return (
           <CreditsPage
             onNext={onNext}
@@ -1493,6 +1723,20 @@ export default function Feasibility() {
             categoryIndices={[0, 1]}
             projectData={projectData}
             attemptedCredits={attemptedCredits}
+            totalPoints={totalPoints}
+            setAttemptedCredits={setAttemptedCredits} // Pass prop
+            creditCounts={creditCounts}
+          />
+        );
+      case 3:
+        return (
+          <CreditsPage
+            onNext={onNext}
+            onBack={onBack}
+            categoryIndices={[2, 3]}
+            projectData={projectData}
+            attemptedCredits={attemptedCredits}
+            totalPoints={totalPoints}
             setAttemptedCredits={setAttemptedCredits} // Pass prop
             creditCounts={creditCounts}
           />
@@ -1502,26 +1746,15 @@ export default function Feasibility() {
           <CreditsPage
             onNext={onNext}
             onBack={onBack}
-            categoryIndices={[2, 3]}
+            categoryIndices={[4, 5]}
             projectData={projectData}
             attemptedCredits={attemptedCredits}
+            totalPoints={totalPoints}
             setAttemptedCredits={setAttemptedCredits} // Pass prop
             creditCounts={creditCounts}
           />
         );
       case 5:
-        return (
-          <CreditsPage
-            onNext={onNext}
-            onBack={onBack}
-            categoryIndices={[4, 5]}
-            projectData={projectData}
-            attemptedCredits={attemptedCredits}
-            setAttemptedCredits={setAttemptedCredits} // Pass prop
-            creditCounts={creditCounts}
-          />
-        );
-      case 6:
         return (
           <ReportPage
             onBack={onBack}
@@ -1540,7 +1773,7 @@ export default function Feasibility() {
     <div className="max-w-screen-2xl  mx-auto p-2 sm:p-4 lg:p-6 pb-64">
       {renderPage()}
 
-      {page >= 3 && page <= 5 && (
+      {page >= 2 && page <= 4 && (
         <div className="bg-white shadow-lg p-4 mt-5 rounded-md border-gray-200 z-50">
           <div className="max-w-screen-2xl mx-auto flex justify-between items-center px-4 sm:px-6 lg:px-8">
             {/* Back Button */}
@@ -1548,37 +1781,15 @@ export default function Feasibility() {
               onClick={onBack}
               className="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300 transition duration-300"
             >
-              Back
+              {page === 2 ? "Mandatory requirements" : "Previous Categories"}
             </button>
-
-            {/* Middle Info */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 items-center">
-              <div>
-                <span className="font-bold text-base sm:text-lg">
-                  Total Points:
-                </span>
-                <span className="text-green-600 font-bold text-lg sm:text-xl tabular-nums ml-2">
-                  {totalPoints}
-                </span>
-              </div>
-              <div>
-                <span className="font-bold text-base sm:text-lg">
-                  Current Level:
-                </span>
-                <span
-                  className={`font-bold text-lg sm:text-xl px-3 py-1 rounded-full ml-2 ${color}`}
-                >
-                  {currentLevelName}
-                </span>
-              </div>
-            </div>
 
             {/* Next Button */}
             <button
               onClick={onNext}
               className="bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700 transition duration-300"
             >
-              Next
+              {page === 4 ? "To Report" : "Next Categories"}
             </button>
           </div>
         </div>
