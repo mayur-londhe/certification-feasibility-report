@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import Tooltip from "./Tooltip";
-import Igbc from "./assets/igbc.svg";
+import Igbc from "./assets/Igbc.svg";
 const feasibilityData = [
   {
     name: "Sustainable Design",
